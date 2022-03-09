@@ -52,27 +52,18 @@ Future<void> getConnectedNetwork() async {
   // 42: Kovan Testnet
 }
 
-Future<void> main() async {
-  final eth = window.ethereum;
-  if (eth == null) {
-    print('MetaMask is not available');
-    return;
-  }
+// Future<void> main() async {
+  
 
-  final client = Web3Client.custom(eth.asRpcService());
-  final credentials = await eth.requestAccount();
 
-  print('Using ${credentials.address}');
-  print('Client is listening: ${await client.isListeningForNetwork()}');
+//   // call contract method "getOwnershipData" for "totalSupply" times.
+//   // add owned tokens for "credentials.address" to array
+//   // show list with array of owned tokens
 
-  // call contract method "getOwnershipData" for "totalSupply" times.
-  // add owned tokens for "credentials.address" to array
-  // show list with array of owned tokens
-
-  // final message = Uint8List.fromList(utf8.encode('Hello from web3dart'));
-  // final signature = await credentials.signPersonalMessage(message);
-  // print('Signature: ${base64.encode(signature)}');
-}
+//   // final message = Uint8List.fromList(utf8.encode('Hello from web3dart'));
+//   // final signature = await credentials.signPersonalMessage(message);
+//   // print('Signature: ${base64.encode(signature)}');
+// }
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key}) : super(key: key);
