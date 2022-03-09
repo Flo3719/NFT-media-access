@@ -8,12 +8,38 @@ import 'package:flutter/material.dart';
 import 'package:web3dart/browser.dart';
 import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/material.dart';
 
-Future<EthereumAddress> getWalletOwner() async {
+
+void main() {
+  runApp(const MyHomePage());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Welcome to Flutter. STATELESS',
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Welcome to Flutter. STATELESS'),
+        ),
+        body: const Center(
+          child: Text('Hello World'),
+        ),
+      ),
+    );
+  }
+}
+
+Future<String> getWalletOwner() async {
   final eth = window.ethereum;
   if (eth == null) {
     print('MetaMask is not available');
-    return EthereumAddress.fromHex("0x0");
+    return EthereumAddress.fromHex("0x0").toString();
   }
 
   final client = Web3Client.custom(eth.asRpcService());
@@ -22,7 +48,7 @@ Future<EthereumAddress> getWalletOwner() async {
   print('Using ${credentials.address}');
   print('Client is listening: ${await client.isListeningForNetwork()}');
 
-  return credentials.address;
+  return credentials.address.toString();
 }
 
 Future<DeployedContract> loadContract() async {
@@ -52,18 +78,7 @@ Future<void> getConnectedNetwork() async {
   // 42: Kovan Testnet
 }
 
-// Future<void> main() async {
-  
 
-
-//   // call contract method "getOwnershipData" for "totalSupply" times.
-//   // add owned tokens for "credentials.address" to array
-//   // show list with array of owned tokens
-
-//   // final message = Uint8List.fromList(utf8.encode('Hello from web3dart'));
-//   // final signature = await credentials.signPersonalMessage(message);
-//   // print('Signature: ${base64.encode(signature)}');
-// }
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key}) : super(key: key);
@@ -73,8 +88,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Client httpClient;
-  Web3Client ethClient;
+  late Client httpClient;
+  late Web3Client ethClient;
 
   @override
   void initState() {
@@ -83,5 +98,50 @@ class _MyHomePageState extends State<MyHomePage> {
     ethClient = new Web3Client("http://localhost:8545", httpClient);
   }
 
-  // rest of class
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Welcome to Flutter. STATEFUL',
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Welcome to Flutter. STATEFUL'),
+        ),
+        body: const Center(
+          child: CurrentWalletOwner(),
+        ),
+      ),
+    );
+  }
+
 }
+
+class CurrentWalletOwner extends StatelessWidget {
+  const CurrentWalletOwner({Key? key}) : super(key: key);
+
+  @override
+  Widget build(context) {
+    return FutureBuilder<String>(
+      future: getWalletOwner(),
+      builder: (context, AsyncSnapshot<String> snapshot) {
+        if (snapshot.hasData) {
+          return Text(snapshot.data!);
+        } else {
+          return CircularProgressIndicator();
+        }
+      }
+    );
+  }
+}
+
+
+
+// Future<void> main() async {
+  
+//   // call contract method "getOwnershipData" for "totalSupply" times.
+//   // add owned tokens for "credentials.address" to array
+//   // show list with array of owned tokens
+
+//   // final message = Uint8List.fromList(utf8.encode('Hello from web3dart'));
+//   // final signature = await credentials.signPersonalMessage(message);
+//   // print('Signature: ${base64.encode(signature)}');
+// }
