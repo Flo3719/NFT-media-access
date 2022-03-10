@@ -144,6 +144,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // Pbbly. Don't need submit function for this app.
   // Future<String> submit(String functionName, List<dynamic> args) async {
   //   EthPrivateKey credentials = EthPrivateKey.fromHex(
+  // // ONLY DEBUGGING EXAMPLE. NOT A VALID ETH PRIVATE KEY:
   //     "3d272d3193203d7a4458ea2a38ace936075c776512fc27093597ca2c790602a9");
 
   //   DeployedContract contract = await loadContract();
