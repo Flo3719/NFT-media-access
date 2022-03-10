@@ -90,6 +90,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
   String ownerOfNumberOne = "press query";
 
+  final myTextEditingController = TextEditingController();
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    myTextEditingController.dispose();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -108,10 +117,17 @@ class _MyHomePageState extends State<MyHomePage> {
         body: Center(
           child: Column(
             children: [
-              CurrentWalletOwner(),
-              TextButton(
+              const CurrentWalletOwner(),
+              TextField(
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'NFT ID',
+                ),
+                controller: myTextEditingController,
+              ),
+              ElevatedButton(
                   onPressed: () async {
-                    var result = await getOwnershipData(1);
+                    var result = await getOwnershipData(int.parse(myTextEditingController.text));
                     setState(() {
                       ownerOfNumberOne = result;
                     });
