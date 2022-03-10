@@ -11,7 +11,6 @@ import 'package:web3dart/web3dart.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 
-
 void main() {
   runApp(const MyHomePage());
 }
@@ -52,7 +51,7 @@ Future<String> getWalletOwner() async {
 }
 
 Future<DeployedContract> loadContract() async {
-  String abiCode = await rootBundle.loadString("assets/abi.json");
+  String abiCode = await rootBundle.loadString("abi.json");
   String contractAddress = "0x0305ef0f0322daA0C1BD3fEbC18928b7Bebc8464";
 
   final contract = DeployedContract(ContractAbi.fromJson(abiCode, "LUZ"),
@@ -69,16 +68,14 @@ Future<void> getConnectedNetwork() async {
 
   final int currentNetwork = await client.getNetworkId();
   print('Current Network connected: $currentNetwork');
-  
+
   // Values:
-  // 1: Ethereum Mainnet 
-  // 2: Morden Testnet (deprecated) 
-  // 3: Ropsten Testnet 
-  // 4: Rinkeby Testnet 
+  // 1: Ethereum Mainnet
+  // 2: Morden Testnet (deprecated)
+  // 3: Ropsten Testnet
+  // 4: Rinkeby Testnet
   // 42: Kovan Testnet
 }
-
-
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key}) : super(key: key);
@@ -91,11 +88,13 @@ class _MyHomePageState extends State<MyHomePage> {
   late Client httpClient;
   late Web3Client ethClient;
 
+  String ownerOfNumberOne = "press query";
+
   @override
   void initState() {
     super.initState();
     httpClient = new Client();
-    ethClient = new Web3Client("http://localhost:8545", httpClient);
+    ethClient = new Web3Client("https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161", httpClient);
   }
 
   @override
@@ -106,13 +105,63 @@ class _MyHomePageState extends State<MyHomePage> {
         appBar: AppBar(
           title: const Text('Welcome to Flutter. STATEFUL'),
         ),
-        body: const Center(
-          child: CurrentWalletOwner(),
+        body: Center(
+          child: Column(
+            children: [
+              CurrentWalletOwner(),
+              TextButton(
+                  onPressed: () async {
+                    var result = await getOwnershipData(1);
+                    setState(() {
+                      ownerOfNumberOne = result;
+                    });
+                  },
+                  child: const Text('Query')),
+                  Text("The Number one is owned by: $ownerOfNumberOne")
+            ],
+          ),
         ),
       ),
     );
   }
 
+  // Pbbly. Don't need submit function for this app.
+  // Future<String> submit(String functionName, List<dynamic> args) async {
+  //   EthPrivateKey credentials = EthPrivateKey.fromHex(
+  //     "3d272d3193203d7a4458ea2a38ace936075c776512fc27093597ca2c790602a9");
+
+  //   DeployedContract contract = await loadContract();
+
+  //   final ethFunction = contract.function(functionName);
+
+  //   var result = await ethClient.sendTransaction(
+  //     credentials,
+  //     Transaction.callContract(
+  //       contract: contract,
+  //       function: ethFunction,
+  //       parameters: args,
+  //     ),
+  //   );
+  //   return result;
+  // }
+
+  Future<List<dynamic>> query(String functionName, List<dynamic> args) async {
+    final contract = await loadContract();
+    final ethFunction = contract.function(functionName);
+    final data = await ethClient.call(
+        contract: contract, function: ethFunction, params: args);
+    return data;
+  }
+
+  Future<String> getOwnershipData(int tokenId) async {
+    var tokenIdUint = BigInt.from(tokenId);
+
+    var response = await query("getOwnershipData", [tokenIdUint]);
+
+    print("response: $response");
+
+    return response.toString();
+  }
 }
 
 class CurrentWalletOwner extends StatelessWidget {
@@ -121,22 +170,19 @@ class CurrentWalletOwner extends StatelessWidget {
   @override
   Widget build(context) {
     return FutureBuilder<String>(
-      future: getWalletOwner(),
-      builder: (context, AsyncSnapshot<String> snapshot) {
-        if (snapshot.hasData) {
-          return Text(snapshot.data!);
-        } else {
-          return CircularProgressIndicator();
-        }
-      }
-    );
+        future: getWalletOwner(),
+        builder: (context, AsyncSnapshot<String> snapshot) {
+          if (snapshot.hasData) {
+            return Text(snapshot.data!);
+          } else {
+            return CircularProgressIndicator();
+          }
+        });
   }
 }
 
-
-
 // Future<void> main() async {
-  
+
 //   // call contract method "getOwnershipData" for "totalSupply" times.
 //   // add owned tokens for "credentials.address" to array
 //   // show list with array of owned tokens
