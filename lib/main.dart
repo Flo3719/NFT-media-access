@@ -88,7 +88,7 @@ class _MyHomePageState extends State<MyHomePage> {
   late Client httpClient;
   late Web3Client ethClient;
 
-  String ownerOfNumberOne = "press query";
+  double totalSupply = 0;
 
   final myTextEditingController = TextEditingController();
 
@@ -103,43 +103,95 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     httpClient = new Client();
-    ethClient = new Web3Client("https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161", httpClient);
+    ethClient = new Web3Client(
+        "https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+        httpClient);
   }
+
+  // @override
+  // Widget build(context) {
+  //   return FutureBuilder(
+  //       future: getTotalSupply(),
+  //       builder: (BuildContext context, AsyncSnapshot snapshot) {
+  //         if (snapshot.hasData) {
+  //           int totalSupply = snapshot.data;
+  //           print(totalSupply);
+  //           return Text("bla");
+  //           // return Text(snapshot.data!.toString());
+  //           // return ListView.builder(
+  //           //     itemCount: snapshot.data,
+  //           //     itemBuilder: (BuildContext context, int index) {
+  //           //       return ListTile(
+  //           //         title: Text("hi"),
+  //           //       );
+  //           //     });
+  //         } else {
+  //           return CircularProgressIndicator();
+  //         }
+  //       });
+  // }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Welcome to Flutter. STATEFUL',
+      title: 'hi',
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Welcome to Flutter. STATEFUL'),
-        ),
-        body: Center(
-          child: Column(
-            children: [
-              const CurrentWalletOwner(),
-              TextField(
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'NFT ID',
-                ),
-                controller: myTextEditingController,
-              ),
-              ElevatedButton(
-                  onPressed: () async {
-                    var result = await getOwnershipData(int.parse(myTextEditingController.text));
-                    setState(() {
-                      ownerOfNumberOne = result;
-                    });
-                  },
-                  child: const Text('Query')),
-                  Text("The Number one is owned by: $ownerOfNumberOne")
-            ],
+          appBar: AppBar(
+            title: Text('Ola'),
           ),
-        ),
-      ),
+          body: Column(children: [
+            ElevatedButton(
+                onPressed: () async {
+                  double result = await getTotalSupply();
+                  setState(() {
+                    totalSupply = result;
+                  });
+                },
+                child: const Text('Query')),
+            Text("Total Supply: ${totalSupply.toString()}")
+          ])),
     );
   }
+
+  // @override
+  // Widget build2(BuildContext context) {
+  //   return MaterialApp(
+  //     title: 'Welcome to Flutter. STATEFUL',
+  //     home: Scaffold(
+  //       appBar: AppBar(
+  //         title: const Text('Welcome to Flutter. STATEFUL'),
+  //       ),
+  //       body: Center(
+  // child: Column(
+  //   children: [
+  //     const CurrentWalletOwner(),
+  //     TextField(
+  //       decoration: const InputDecoration(
+  //         border: OutlineInputBorder(),
+  //         labelText: 'NFT ID',
+  //       ),
+  //       controller: myTextEditingController,
+  //     ),
+  //     ElevatedButton(
+  //         onPressed: () async {
+  //           var result = await getOwnershipData(
+  //               int.parse(myTextEditingController.text));
+  //           setState(() {
+  //             ownerOfNumberOne = result;
+  //           });
+  //         },
+  //         child: const Text('Query')),
+  //     Text("The Number one is owned by: $ownerOfNumberOne"),
+  // child: ListView.builder(
+  //     itemCount: getTotalSupply(),
+  //     itemBuilder: (BuildContext context, int index) {
+  //       return ListTile(
+  //         title: Text("hi"),
+  //       );
+  //     })),
+  //     ),
+  //   );
+  // }
 
   // Pbbly. Don't need submit function for this app.
   // Future<String> submit(String functionName, List<dynamic> args) async {
@@ -170,6 +222,11 @@ class _MyHomePageState extends State<MyHomePage> {
     return data;
   }
 
+  Future<double> getTotalSupply() async {
+    print((await query("totalSupply", []))[0].toDouble());
+    return (await query("totalSupply", []))[0].toDouble();
+  }
+
   Future<String> getOwnershipData(int tokenId) async {
     var tokenIdUint = BigInt.from(tokenId);
 
@@ -178,6 +235,23 @@ class _MyHomePageState extends State<MyHomePage> {
     print("response: $response");
 
     return response.toString();
+  }
+
+  Future<List<int>> getOwnedNFTIds() async {
+    List<int> values = [];
+
+    double totalSupply = await getTotalSupply();
+
+    for (int i = 0; i < totalSupply; i++) {
+      String owner = await getOwnershipData(i);
+      String walletOwner = await getWalletOwner();
+
+      if (owner == walletOwner) {
+        values.add(i);
+      }
+    }
+
+    return values;
   }
 }
 
